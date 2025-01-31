@@ -22,6 +22,12 @@ pub struct EmailConfirmationRequest {
     pub status: Status,
 }
 
+impl From<EmailConfirmationMinimalRequest> for EmailConfirmationRequest {
+    fn from(minimal_request: EmailConfirmationMinimalRequest) -> Self {
+        EmailConfirmationRequest::new(minimal_request.email, minimal_request.client_id, minimal_request.callback_url)
+    }
+}
+
 impl EmailConfirmationRequest {
     pub fn new(email: String, client_id: String, callback_url: String) -> Self {
         let id = Uuid::new_v4().to_string();
@@ -56,11 +62,24 @@ impl From<&MinimalStatus> for Status {
     fn from(status: &MinimalStatus) -> Self {
         match *status {
             MinimalStatus::None => Status::None,
-            MinimalStatus::Queued=> Status::Queued(SystemTime::now()),
-            MinimalStatus::Pending=> Status::Pending(SystemTime::now()),
-            MinimalStatus::Confirmed=> Status::Confirmed(SystemTime::now()),
-            MinimalStatus::Expired=> Status::Expired(SystemTime::now()),
-            MinimalStatus::Done=> Status::Done(SystemTime::now())
+            MinimalStatus::Queued => Status::Queued(SystemTime::now()),
+            MinimalStatus::Pending => Status::Pending(SystemTime::now()),
+            MinimalStatus::Confirmed => Status::Confirmed(SystemTime::now()),
+            MinimalStatus::Expired => Status::Expired(SystemTime::now()),
+            MinimalStatus::Done => Status::Done(SystemTime::now())
+        }
+    }
+}
+
+impl From<&Status> for MinimalStatus {
+    fn from(status: &Status) -> Self {
+        match *status {
+            Status::None => MinimalStatus::None,
+            Status::Queued(_) => MinimalStatus::Queued,
+            Status::Pending(_) => MinimalStatus::Pending,
+            Status::Confirmed(_) => MinimalStatus::Confirmed,
+            Status::Expired(_) => MinimalStatus::Expired,
+            Status::Done(_) => MinimalStatus::Done
         }
     }
 }

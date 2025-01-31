@@ -3,7 +3,7 @@ use crate::email_confirmation_request;
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct QueryParams {
-    pub status: Option<email_confirmation_request::Status>,
+    pub status: Option<email_confirmation_request::MinimalStatus>,
     pub email: Option<String>,
 }
 

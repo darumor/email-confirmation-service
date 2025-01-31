@@ -15,12 +15,11 @@ async fn main() -> Result<(), Error> {
     tracing::init_default_subscriber();
     set_var("AWS_LAMBDA_HTTP_IGNORE_STAGE_IN_PATH", "true");
 
-    //let config = aws_config::load_from_env().await;
-    //let db_client = Client::new(&config);
-    //let table_name = env::var("DYNAMO_TABLE_NAME")?;
+    let config = aws_config::load_from_env().await;
+    let db_client = Client::new(&config);
+    let table_name = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME")?; //EmailConfirmationLambdaTable
 
-    //let email_confirmation_request_service = EmailConfirmationRequestService::new(db_client, &table_name);
-    let email_confirmation_request_service = EmailConfirmationRequestService::new();
+    let email_confirmation_request_service = EmailConfirmationRequestService::new(db_client, &table_name);
     let email_confirmation_request_api = Router::new()
         .route("/", get(handler::get_email_confirmation_requests).post(handler::post_email_confirmation_request))
         .route(
