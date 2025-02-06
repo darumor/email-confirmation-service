@@ -1,12 +1,12 @@
 use anyhow::Result;
-use axum::http::{request, StatusCode};
+use axum::http::{StatusCode};
 use axum::{
     extract::{Path, State, Query},
     response::Json,
 };
 use serde_json::{json, Value};
-use crate::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest, Status};
-use crate::email_confirmation_request_service::EmailConfirmationRequestService;
+use crate::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest};
+use crate::email_confirmation_request_service::{EmailConfirmationRequestService, NOT_FOUND_ERROR};
 use crate::handler_params::{PutStatusParams, QueryParams};
 
 
@@ -48,21 +48,31 @@ pub async fn put_email_confirmation_request_status(
     Path(id): Path<String>,
     Json(put_status_params): Json<PutStatusParams>,
 ) -> (StatusCode, Json<Value>) {
-    let request_status= Status::from(&put_status_params.status);
-    let result = service.put_email_confirmation_request_status(id, request_status).await;
+    let result = service.put_email_confirmation_request_status(id, put_status_params.status).await;
     result_to_response(result)
 }
 
 fn result_to_response(result: Result<Json<Value>>) -> (StatusCode, Json<Value>) {
     match result {
         Ok(json) => (StatusCode::OK, json),
-        Err(error) => (
-            StatusCode::BAD_REQUEST,
-            Json(json!({
+        Err(error) =>
+        if error.to_string().starts_with(NOT_FOUND_ERROR) {
+            (
+                StatusCode::NOT_FOUND,
+                Json(json!({
                 "error": true,
                 "message": error.to_string()
             })),
-        ),
+            )
+        } else {
+            (
+                StatusCode::BAD_REQUEST,
+                Json(json!({
+                "error": true,
+                "message": error.to_string()
+            })),
+            )
+        }
     }
 }
 

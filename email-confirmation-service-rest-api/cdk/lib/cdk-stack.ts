@@ -1,9 +1,9 @@
-import { join } from 'path';
-import { RustFunction } from 'cargo-lambda-cdk';
-import { EndpointType, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway'
-import { AttributeType, Table, BillingMode } from 'aws-cdk-lib/aws-dynamodb';
-import { RemovalPolicy, Stack, StackProps } from "aws-cdk-lib";
-import { Construct } from "constructs";
+import {join} from 'path';
+import {RustFunction} from 'cargo-lambda-cdk';
+import {EndpointType, LambdaRestApi} from 'aws-cdk-lib/aws-apigateway'
+import {AttributeType, BillingMode, Table} from 'aws-cdk-lib/aws-dynamodb';
+import {RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
+import {Construct} from "constructs";
 
 
 export class CdkStack extends Stack {
@@ -11,7 +11,8 @@ export class CdkStack extends Stack {
     super(scope, id, props);
 
     const dynamoTable = new Table(this, 'EmailConfirmationLambdaTable', {
-      partitionKey: { name: 'id', type: AttributeType.STRING },
+      partitionKey: { name: 'pk', type: AttributeType.STRING },
+      sortKey: { name: 'expires_at', type: AttributeType.NUMBER },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });

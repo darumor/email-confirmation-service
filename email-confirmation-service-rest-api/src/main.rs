@@ -17,16 +17,17 @@ async fn main() -> Result<(), Error> {
 
     let config = aws_config::load_from_env().await;
     let db_client = Client::new(&config);
-    let table_name = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME")?; //EmailConfirmationLambdaTable
+    let table_name = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME")?;
+    // export EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME=EmailConfirmationLambdaTable
 
     let email_confirmation_request_service = EmailConfirmationRequestService::new(db_client, &table_name);
     let email_confirmation_request_api = Router::new()
         .route("/", get(handler::get_email_confirmation_requests).post(handler::post_email_confirmation_request))
         .route(
-            "/{id}",
+            "/{pk}",
             get(handler::get_email_confirmation_request_single).delete(handler::delete_email_confirmation_request_single),
         )
-        .route("/{id}/status", put(handler::put_email_confirmation_request_status));
+        .route("/{pk}/status", put(handler::put_email_confirmation_request_status));
 
     let app = Router::new()
         .nest("/email-confirmation-requests", email_confirmation_request_api)
