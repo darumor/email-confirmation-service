@@ -12,7 +12,7 @@ export class CdkStack extends Stack {
 
     const dynamoTable = new Table(this, 'EmailConfirmationLambdaTable', {
       partitionKey: { name: 'pk', type: AttributeType.STRING },
-      sortKey: { name: 'expires_at', type: AttributeType.NUMBER },
+      // sortKey: { name: 'expires_at', type: AttributeType.NUMBER },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });

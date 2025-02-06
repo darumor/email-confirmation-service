@@ -1,3 +1,4 @@
+use std::fmt;
 use std::ops::Add;
 use serde::{Deserialize, Serialize};
 use std::time::*;
@@ -14,7 +15,7 @@ pub struct EmailConfirmationMinimalRequest {
     pub callback_url: String
 }
 
-#[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct EmailConfirmationRequest {
     pub pk: String, //PK email#client_id#request_id
     pub email: String,
@@ -22,9 +23,22 @@ pub struct EmailConfirmationRequest {
     pub request_id: String,
     pub callback_url: String,
     pub signature_key: String,
-    pub created_at: u32,
-    pub expires_at: u32, // SK
-    pub updated_at: u32,
+    pub created_at: u64,
+    pub expires_at: u64, // SK
+    pub updated_at: u64,
+    pub status: Status,
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct SanitizedEmailConfirmationRequest {
+    pub pk: String,
+    pub email: String,
+    pub client_id: String,
+    pub request_id: String,
+    pub callback_url: String,
+    pub created_at: u64,
+    pub expires_at: u64,
+    pub updated_at: u64,
     pub status: Status,
 }
 
@@ -38,9 +52,9 @@ impl EmailConfirmationRequest {
     pub fn new(email: String, client_id: String, request_id: String, callback_url: String) -> Self {
         let pk = Self::pk_from_params(&email, &client_id, &request_id);
         let signature_key = Uuid::new_v4().to_string();
-        let created_at = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as u32;
-        let expires_at = SystemTime::now().add(EMAIL_REQUEST_EXPIRATION_PERIOD).duration_since(UNIX_EPOCH).unwrap().as_secs() as u32;
-        let updated_at = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() as u32;
+        let created_at = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
+        let expires_at = SystemTime::now().add(EMAIL_REQUEST_EXPIRATION_PERIOD).duration_since(UNIX_EPOCH).unwrap().as_secs();
+        let updated_at = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
         EmailConfirmationRequest { pk, email, client_id, request_id, callback_url, signature_key, created_at, expires_at, updated_at, status: Status::Queued }
     }
 
@@ -69,4 +83,16 @@ pub enum Status {
     Confirmed,
     Expired,
     Done
+}
+
+impl fmt::Display for Status {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            Status::Queued => write!(f, "Queued"),
+            Status::Pending => write!(f, "Pending"),
+            Status::Confirmed => write!(f, "Confirmed"),
+            Status::Expired => write!(f, "Expired"),
+            Status::Done => write!(f, "Done"),
+        }
+    }
 }

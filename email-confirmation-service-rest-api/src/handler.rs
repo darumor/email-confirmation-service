@@ -37,25 +37,43 @@ pub async fn get_email_confirmation_request_single(
 
 pub async fn delete_email_confirmation_request_single(
     State(service): State<EmailConfirmationRequestService>,
-    Path(id): Path<String>,
+    Path(pk): Path<String>,
 ) -> (StatusCode, Json<Value>) {
-    let result = service.delete_email_confirmation_request_single(id).await;
+    let result = service.delete_email_confirmation_request_single(pk).await;
     result_to_response(result)
 }
 
 pub async fn put_email_confirmation_request_status(
     State(service): State<EmailConfirmationRequestService>,
-    Path(id): Path<String>,
+    Path(pk): Path<String>,
     Json(put_status_params): Json<PutStatusParams>,
 ) -> (StatusCode, Json<Value>) {
-    let result = service.put_email_confirmation_request_status(id, put_status_params.status).await;
+    let result = service.put_email_confirmation_request_status(pk, put_status_params.status).await;
     result_to_response(result)
 }
 
 fn result_to_response(result: Result<Json<Value>>) -> (StatusCode, Json<Value>) {
     match result {
         Ok(json) => (StatusCode::OK, json),
-        Err(error) =>
+        Err(error) => {
+            let mut err_str = String::new();
+            error.chain().skip(1).for_each(
+                |cause| {
+                    err_str.push_str(" because: ");
+                    err_str.push_str(cause.to_string().as_str());
+                }
+            );
+
+            (
+                StatusCode::INTERNAL_SERVER_ERROR,
+                Json(json!({
+                    "error": true,
+                    "message": err_str
+                }))
+            )
+        }
+
+/*
         if error.to_string().starts_with(NOT_FOUND_ERROR) {
             (
                 StatusCode::NOT_FOUND,
@@ -73,6 +91,8 @@ fn result_to_response(result: Result<Json<Value>>) -> (StatusCode, Json<Value>) 
             })),
             )
         }
+
+ */
     }
 }
 

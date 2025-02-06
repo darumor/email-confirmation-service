@@ -12,5 +12,5 @@ pub struct QueryParams {
 
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct PutStatusParams {
-    pub status: email_confirmation_request::Status,
+    pub status: Option<email_confirmation_request::Status>,
 }
