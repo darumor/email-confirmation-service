@@ -124,12 +124,6 @@ impl EmailConfirmationRequestService {
             bail!("{NOT_FOUND_ERROR}: {pk}!")
         }
 
-      /*  Ok(Json(json!({
-            "error": false,
-           "message": "Trying to delete Request for pk: ".to_owned() + &pk
-        })))
-        */
-
         self.db_client
             .delete_item()
             .table_name(&self.table_name)
@@ -141,7 +135,6 @@ impl EmailConfirmationRequestService {
             "error": false,
            "message": "Request for pk: ".to_owned() + &pk + " deleted."
         })))
-
     }
 
     pub async fn put_email_confirmation_request_status(&self, pk: String, status: Option<Status>) -> Result<Json<Value>> {
@@ -151,15 +144,6 @@ impl EmailConfirmationRequestService {
 
         if let Some(status) = status {
             let updated_at = format!("{}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs());
-
-
-           /* Ok(Json(json!({
-                  "error": false,
-                 "message": "Trying to update Request status for pk: ".to_owned() + &pk + " : " + &updated_at + " : " + &status.to_string()
-             })))
-
-
-            */
 
             self.db_client
                 .update_item()
@@ -179,7 +163,6 @@ impl EmailConfirmationRequestService {
                 "error": false,
                 "event": format!("Request status for pk: {} changed to {}", pk, status.to_string())
             })))
-
 
         } else {
            Ok(Json(json!({})))

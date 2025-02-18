@@ -13,13 +13,11 @@ export class CdkStack extends Stack {
     const dynamoTable = new Table(this, 'EmailConfirmationLambdaTable', {
       partitionKey: { name: 'pk', type: AttributeType.STRING },
       stream: StreamViewType.NEW_AND_OLD_IMAGES,
-      // sortKey: { name: 'expires_at', type: AttributeType.NUMBER },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
     });
 
     const lambdaHandler = new RustFunction(this, 'EmailConfirmationLambdaFunction', {
-      // Path to the root directory.
       manifestPath: join(__dirname, '..', '..'),
       environment: {
         "EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME": dynamoTable.tableName
@@ -27,7 +25,6 @@ export class CdkStack extends Stack {
     });
 
     dynamoTable.grantFullAccess(lambdaHandler);
-
 
     new LambdaRestApi(this, 'EmailConfirmationLambdaAPIGateway', {
       handler: lambdaHandler,
