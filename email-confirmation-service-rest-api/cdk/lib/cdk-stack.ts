@@ -1,7 +1,7 @@
 import {join} from 'path';
 import {RustFunction} from 'cargo-lambda-cdk';
 import {EndpointType, LambdaRestApi} from 'aws-cdk-lib/aws-apigateway'
-import {AttributeType, BillingMode, Table} from 'aws-cdk-lib/aws-dynamodb';
+import {AttributeType, BillingMode, Table, StreamViewType} from 'aws-cdk-lib/aws-dynamodb';
 import {RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
 import {Construct} from "constructs";
 
@@ -12,6 +12,7 @@ export class CdkStack extends Stack {
 
     const dynamoTable = new Table(this, 'EmailConfirmationLambdaTable', {
       partitionKey: { name: 'pk', type: AttributeType.STRING },
+      stream: StreamViewType.NEW_AND_OLD_IMAGES,
       // sortKey: { name: 'expires_at', type: AttributeType.NUMBER },
       billingMode: BillingMode.PAY_PER_REQUEST,
       removalPolicy: RemovalPolicy.DESTROY,
@@ -25,7 +26,8 @@ export class CdkStack extends Stack {
       }
     });
 
-    dynamoTable.grantFullAccess(lambdaHandler)
+    dynamoTable.grantFullAccess(lambdaHandler);
+
 
     new LambdaRestApi(this, 'EmailConfirmationLambdaAPIGateway', {
       handler: lambdaHandler,

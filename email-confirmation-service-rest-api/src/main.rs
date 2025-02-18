@@ -1,4 +1,4 @@
-use lambda_http::{run, service_fn, tracing, Error};
+use lambda_http::{run, tracing, Error};
 mod handler;
 mod email_confirmation_request;
 mod handler_params;
