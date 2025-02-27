@@ -18,7 +18,7 @@ export class CdkStack extends Stack {
      */
     });
 
-    new LambdaRestApi(this, 'EmailConfirmationLambdaAPIGateway', {
+    new LambdaRestApi(this, 'EmailLinkClickHandlerLambdaAPIGateway', {
       handler: lambdaHandler,
       endpointTypes: [EndpointType.REGIONAL]
     });

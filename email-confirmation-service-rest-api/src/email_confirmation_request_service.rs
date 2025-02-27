@@ -111,12 +111,34 @@ impl EmailConfirmationRequestService {
             }
 
             let item = results.items.unwrap().first().unwrap().to_owned();
-            let mut request: SanitizedEmailConfirmationRequest = from_item(item)?;
+            let request: SanitizedEmailConfirmationRequest = from_item(item)?;
 
             Ok(Json(json!({
                 "error": false,
                 "request": request
             })))
+    }
+
+    pub(crate) async fn get_email_confirmation_request_internal(&self, pk: String) -> Result<EmailConfirmationRequest> {
+        let results = self
+            .db_client
+            .query()
+            .table_name(&self.table_name)
+            .key_condition_expression("#name = :value")
+            .expression_attribute_names("#name", "pk")
+            .expression_attribute_values(":value", AttributeValue::S(pk.to_owned()))
+            .send()
+            .await?;
+        if results.count == 0
+            || results.items.is_none()
+            || results.items.clone().unwrap().is_empty()
+        {
+            bail!("{NOT_FOUND_ERROR}: {pk}!")
+        }
+
+        let item = results.items.unwrap().first().unwrap().to_owned();
+        let confirmation_request: EmailConfirmationRequest = from_item(item)?;
+        Ok(confirmation_request)
     }
 
     pub async fn delete_email_confirmation_request_single(&self, pk: String) -> Result<Json<Value>> {

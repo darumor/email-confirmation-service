@@ -1,36 +1,72 @@
 use std::env;
 use reqwest::Client;
 use lambda_http::{Body, Error, Request, RequestExt, RequestPayloadExt, Response};
+use crate::email_confirmation_request::{SanitizedEmailConfirmationRequest, Status};
 
-/// This is the main body for the function.
-/// Write your code inside it.
-/// There are some code example in the following URLs:
-/// - https://github.com/awslabs/aws-lambda-rust-runtime/tree/main/examples
 pub(crate) async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
-    // Extract some useful information from the request
-
-    let method = event.method().as_str();
-    let url = event.uri().to_string();
-    let path_params = event.path_parameters();
-    let query_params = event.query_string_parameters();
     let path = event.raw_http_path();
+    let method = event.method().as_str();
+    let query_params = event.query_string_parameters();
 
-    let response_as_string = call_target_lambda().await?;
+    if path != "/confirm" {
+        return Err(Error::from(format!("Invalid path: {}", path)));
+    }
 
-    let request = format!(
-        "method: {}\nurl: {}\n path_params: {:?}\nquery_params: {:?}\npath: {}\nevent: {:?}\nresponse: {}",
-        method, url, path_params, query_params, path, event, response_as_string);
+    if method != "GET" {
+        return Err(Error::from(format!("Invalid method: {}", method)));
+    }
+
+    let principal  = query_params.first("principal").unwrap();
+    let signature = query_params.first("signature").unwrap();
+
+  /*  if principal == None || signature == None || principal == Some("") {
+        return Err(Error::from(format!("Invalid parameters")));
+    }
+
+   */
+    let service_url = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_URL")?;
+    let confirmation_request = get_confirmation_request_by_principal(service_url, principal.to_string(), signature.to_string()).await?;
+
+    if !expiration_date_is_valid(&confirmation_request) {
+        return Err(Error::from(format!("Request expired. Expiration date: {}", confirmation_request.expires_at)));
+    }
+
+    // let response_as_string = call_target_lambda().await?;
 
     // Return something that implements IntoResponse.
     // It will be serialized to the right response event automatically by the runtime
     let resp = Response::builder()
         .status(200)
         .header("content-type", "text/html")
-        .body(request.into())
+        .body(format!("{:?}", confirmation_request).into())
         .map_err(Box::new)?;
 
     Ok(resp)
 }
+
+async fn get_confirmation_request_by_principal(service_url: String, principal: String, signature: String) -> Result<SanitizedEmailConfirmationRequest, Error> {
+    let get_one_url = format!("{}/email-confirmation-requests/{}?signature={}", service_url, principal, signature);
+    // TODO make the request
+
+    //Err(Error::from("Invalid request"))
+
+    Ok(SanitizedEmailConfirmationRequest {
+        request_id: String::from("asd"),
+        status: Status::Pending,
+        expires_at: 5,
+        updated_at: 4,
+        pk: String::from("asd"),
+        email: String::from("jarkko@example.com"),
+        client_id: String::from("asd"),
+        created_at: 0,
+        callback_url: String::from("https://example.com"),
+    })
+}
+
+fn expiration_date_is_valid(confirmation_request: &SanitizedEmailConfirmationRequest) -> bool {
+    true
+}
+
 
 
 async fn call_target_lambda() -> Result<String, Error> {

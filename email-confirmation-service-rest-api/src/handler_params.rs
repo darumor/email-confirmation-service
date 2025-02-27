@@ -14,3 +14,8 @@ pub struct QueryParams {
 pub struct PutStatusParams {
     pub status: Option<email_confirmation_request::Status>,
 }
+
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq, Eq)]
+pub struct GetSingleParams {
+    pub signature: Option<String>
+}

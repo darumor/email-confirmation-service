@@ -1,13 +1,14 @@
-use anyhow::Result;
+use anyhow::{Error, Result};
 use axum::http::{StatusCode};
 use axum::{
     extract::{Path, State, Query},
     response::Json,
 };
-use serde_json::{json, Value};
+use serde_dynamo::to_item;
+use serde_json::{json, Value, to_value};
 use crate::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest};
 use crate::email_confirmation_request_service::{EmailConfirmationRequestService, NOT_FOUND_ERROR};
-use crate::handler_params::{PutStatusParams, QueryParams};
+use crate::handler_params::{GetSingleParams, PutStatusParams, QueryParams};
 
 
 pub async fn get_email_confirmation_requests(
@@ -29,10 +30,28 @@ pub async fn post_email_confirmation_request(
 
 pub async fn get_email_confirmation_request_single(
     State(service): State<EmailConfirmationRequestService>,
-    Path(id): Path<String>,
+    Path(pk): Path<String>,
+    Query(params): Query<GetSingleParams>,
 ) -> (StatusCode, Json<Value>) {
-    let result = service.get_email_confirmation_request_single(id).await;
-    result_to_response(result)
+
+
+    if let GetSingleParams {
+        signature: Some(signature_param)
+    } = params {
+        let confirmation_request = service.get_email_confirmation_request_internal(pk).await.unwrap();
+        if signature_is_valid(signature_param, &confirmation_request) {
+            return result_to_response(
+                Ok(Json(json!({
+                    "error": false,
+                    "request": confirmation_request
+                }))));
+        }
+    }
+    result_to_response(Err(Error::msg(NOT_FOUND_ERROR.to_string())))
+}
+
+fn signature_is_valid(signature: String, confirmation_request: &EmailConfirmationRequest) -> bool {
+    true
 }
 
 pub async fn delete_email_confirmation_request_single(
