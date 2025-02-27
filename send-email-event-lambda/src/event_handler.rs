@@ -18,10 +18,16 @@ pub(crate)async fn function_handler(event: LambdaEvent<Event>) -> Result<(), Err
      const data = event.Records[0];
 
    if(data.eventName != 'INSERT' && data.eventSource != 'aws:dynamodb'){
-
        return;
 
+
    }
+
+       check_email_status(queued)
+       format_email()
+       send_email_using SES
+    update_status queued -> pending
+
     */
 
     Ok(())

@@ -22,6 +22,16 @@ pub(crate)async fn function_handler(event: LambdaEvent<Event>) -> Result<(), Err
        return;
 
    }
+
+   check_email_confirmation_status(confirmed)
+   call_callback_uri_using_https-POST()
+   update status -> confirmed -> DONE
+
+
+
+
+
+
     */
 
     Ok(())

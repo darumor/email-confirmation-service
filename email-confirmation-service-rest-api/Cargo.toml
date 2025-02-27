@@ -14,3 +14,4 @@ serde_dynamo = { version = "4", features = ["aws-sdk-dynamodb+1"] }
 serde_json = "1.0.115"
 tokio = { version = "1", features = ["macros"] }
 uuid = { version = "1.12.1", features = ["v4"] }
+axum = "0.8.1"
