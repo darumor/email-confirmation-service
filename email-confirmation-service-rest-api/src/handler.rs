@@ -6,7 +6,7 @@ use axum::{
 };
 use serde_dynamo::to_item;
 use serde_json::{json, Value, to_value};
-use crate::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest};
+use crate::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest, SanitizedEmailConfirmationRequest};
 use crate::email_confirmation_request_service::{EmailConfirmationRequestService, NOT_FOUND_ERROR};
 use crate::handler_params::{GetSingleParams, PutStatusParams, QueryParams};
 
@@ -39,11 +39,12 @@ pub async fn get_email_confirmation_request_single(
         signature: Some(signature_param)
     } = params {
         let confirmation_request = service.get_email_confirmation_request_internal(pk).await.unwrap();
+
         if signature_is_valid(signature_param, &confirmation_request) {
             return result_to_response(
                 Ok(Json(json!({
                     "error": false,
-                    "request": confirmation_request
+                    "request": SanitizedEmailConfirmationRequest::from(confirmation_request)
                 }))));
         }
     }

@@ -784,10 +784,12 @@ dependencies = [
  "aws-config",
  "aws-sdk-lambda",
  "lambda_http",
+ "lambda_runtime",
  "reqwest",
  "serde",
  "serde_json",
  "tokio",
+ "urlencoding",
  "uuid",
 ]
 

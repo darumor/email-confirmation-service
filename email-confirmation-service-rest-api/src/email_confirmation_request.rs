@@ -48,6 +48,21 @@ impl From<EmailConfirmationMinimalRequest> for EmailConfirmationRequest {
     }
 }
 
+impl From<EmailConfirmationRequest> for SanitizedEmailConfirmationRequest {
+    fn from(original_request: EmailConfirmationRequest) -> Self {
+        SanitizedEmailConfirmationRequest{
+            pk: original_request.pk,
+            email: original_request.email,
+            client_id: original_request.client_id,
+            request_id: original_request.request_id,
+            callback_url: original_request.callback_url,
+            created_at: original_request.created_at,
+            expires_at: original_request.expires_at,
+            updated_at: original_request.updated_at,
+            status: original_request.status,
+        }
+    }
+}
 impl EmailConfirmationRequest {
     pub fn new(email: String, client_id: String, request_id: String, callback_url: String) -> Self {
         let pk = Self::pk_from_params(&email, &client_id, &request_id);

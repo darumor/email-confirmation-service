@@ -2,6 +2,12 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct EmailConfirmationServiceApiResponse {
+    pub error: bool,
+    pub request: SanitizedEmailConfirmationRequest
+}
+
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
 pub struct SanitizedEmailConfirmationRequest {
     pub pk: String,
     pub email: String,

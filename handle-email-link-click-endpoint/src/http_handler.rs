@@ -1,7 +1,9 @@
 use std::env;
 use reqwest::Client;
+use urlencoding::encode;
 use lambda_http::{Body, Error, Request, RequestExt, RequestPayloadExt, Response};
-use crate::email_confirmation_request::{SanitizedEmailConfirmationRequest, Status};
+use lambda_runtime::{tracing};
+use crate::email_confirmation_request::{SanitizedEmailConfirmationRequest, Status, EmailConfirmationServiceApiResponse};
 
 pub(crate) async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     let path = event.raw_http_path();
@@ -19,19 +21,34 @@ pub(crate) async fn function_handler(event: Request) -> Result<Response<Body>, E
     let principal  = query_params.first("principal").unwrap();
     let signature = query_params.first("signature").unwrap();
 
-  /*  if principal == None || signature == None || principal == Some("") {
-        return Err(Error::from(format!("Invalid parameters")));
-    }
-
-   */
     let service_url = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_URL")?;
-    let confirmation_request = get_confirmation_request_by_principal(service_url, principal.to_string(), signature.to_string()).await?;
+    let api_key = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY")?;
+
+
+
+
+
+
+    let raw_data = get_raw_data(
+        service_url, api_key, principal.to_string(), signature.to_string()).await.unwrap();
+
+    tracing::info!("raw data: {:?}", &raw_data);
+
+    let resp = Response::builder()
+        .status(200)
+        .header("content-type", "text/html")
+        .body(format!("{:?}", raw_data).into())
+        .map_err(Box::new)?;
+
+    Ok(resp)
+
+        /*
+    let confirmation_request = get_confirmation_request_by_principal(
+        service_url, api_key, principal.to_string(), signature.to_string()).await?;
 
     if !expiration_date_is_valid(&confirmation_request) {
-        return Err(Error::from(format!("Request expired. Expiration date: {}", confirmation_request.expires_at)));
+        return Err(Error::from(format!("Request expired. Expiration date: {}", &confirmation_request.expires_at)));
     }
-
-    // let response_as_string = call_target_lambda().await?;
 
     // Return something that implements IntoResponse.
     // It will be serialized to the right response event automatically by the runtime
@@ -42,15 +59,54 @@ pub(crate) async fn function_handler(event: Request) -> Result<Response<Body>, E
         .map_err(Box::new)?;
 
     Ok(resp)
+    */
 }
 
-async fn get_confirmation_request_by_principal(service_url: String, principal: String, signature: String) -> Result<SanitizedEmailConfirmationRequest, Error> {
+
+async fn get_raw_data(service_url: String, api_key: String, principal: String, signature: String) -> Result<String, Error> {
+    let get_one_url = format!("{}/email-confirmation-requests/{}?signature={}", service_url, encode(&principal), encode(&signature));
+
+    let reqwest_client = Client::new();
+    let response = reqwest_client
+        .get(&get_one_url)
+        //.header("x-api-key", api_key)
+        .header("Content-Type", "application/json")
+        //.json(&json!({"name": "Alice"}))
+        .send()
+        .await
+        .unwrap();
+
+    tracing::info!("url: {:?}", &get_one_url);
+
+    let text= response.text().await.unwrap();
+
+    tracing::info!("response: {:?}", &text);
+
+    Ok(text)
+}
+
+
+async fn get_confirmation_request_by_principal(service_url: String, api_key: String, principal: String, signature: String) -> Result<SanitizedEmailConfirmationRequest, Error> {
     let get_one_url = format!("{}/email-confirmation-requests/{}?signature={}", service_url, principal, signature);
-    // TODO make the request
 
-    //Err(Error::from("Invalid request"))
+    let reqwest_client = Client::new();
+    let response = reqwest_client
+        .get(get_one_url)
+        .header("x-api-key", api_key)
+        .header("Content-Type", "application/json")
+        //.json(&json!({"name": "Alice"}))
+        .send()
+        .await
+        .unwrap();
 
-    Ok(SanitizedEmailConfirmationRequest {
+    let json_data : EmailConfirmationServiceApiResponse = response.json().await?;
+    if json_data.error {
+        return Err(Error::from(format!("Invalid response: {:?}", json_data)));
+    }
+
+    Ok(json_data.request)
+
+  /*  Ok(SanitizedEmailConfirmationRequest {
         request_id: String::from("asd"),
         status: Status::Pending,
         expires_at: 5,
@@ -61,6 +117,8 @@ async fn get_confirmation_request_by_principal(service_url: String, principal: S
         created_at: 0,
         callback_url: String::from("https://example.com"),
     })
+    */
+
 }
 
 fn expiration_date_is_valid(confirmation_request: &SanitizedEmailConfirmationRequest) -> bool {
@@ -68,7 +126,7 @@ fn expiration_date_is_valid(confirmation_request: &SanitizedEmailConfirmationReq
 }
 
 
-
+// let response_as_string = call_target_lambda().await?;
 async fn call_target_lambda() -> Result<String, Error> {
     let service_url = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_URL")?;
     let api_key = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY")?;
