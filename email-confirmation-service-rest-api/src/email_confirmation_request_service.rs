@@ -73,7 +73,7 @@ impl EmailConfirmationRequestService {
         Ok(results.count > 0)
     }
 
-    pub async fn post_email_confirmation_request(&self, ec_request: EmailConfirmationRequest) -> Result<Json<Value>> {
+    pub async fn post_email_confirmation_request(&self, ec_request: EmailConfirmationRequest, signature: String) -> Result<Json<Value>> {
         if self.request_exist(&ec_request.pk).await? {
             bail!("Request exists!")
         }
@@ -89,7 +89,7 @@ impl EmailConfirmationRequestService {
 
         Ok(Json(json!({
            "error": false,
-            "message": "Request added.",
+            "message": format!("Request added. Signature: {}", signature),
         })))
     }
 

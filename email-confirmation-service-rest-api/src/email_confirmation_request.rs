@@ -36,9 +36,7 @@ pub struct SanitizedEmailConfirmationRequest {
     pub client_id: String,
     pub request_id: String,
     pub callback_url: String,
-    pub created_at: u64,
     pub expires_at: u64,
-    pub updated_at: u64,
     pub status: Status,
 }
 
@@ -56,9 +54,7 @@ impl From<EmailConfirmationRequest> for SanitizedEmailConfirmationRequest {
             client_id: original_request.client_id,
             request_id: original_request.request_id,
             callback_url: original_request.callback_url,
-            created_at: original_request.created_at,
             expires_at: original_request.expires_at,
-            updated_at: original_request.updated_at,
             status: original_request.status,
         }
     }

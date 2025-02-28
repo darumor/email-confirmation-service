@@ -14,9 +14,7 @@ pub struct SanitizedEmailConfirmationRequest {
     pub client_id: String,
     pub request_id: String,
     pub callback_url: String,
-    pub created_at: u64,
     pub expires_at: u64,
-    pub updated_at: u64,
     pub status: Status,
 }
 

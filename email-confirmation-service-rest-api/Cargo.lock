@@ -620,10 +620,12 @@ dependencies = [
  "aws-sdk-dynamodb",
  "aws-smithy-types",
  "axum",
+ "hex",
  "lambda_http",
  "serde",
  "serde_dynamo",
  "serde_json",
+ "sha2",
  "tokio",
  "uuid",
 ]
