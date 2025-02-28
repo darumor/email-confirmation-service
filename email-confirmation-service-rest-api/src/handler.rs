@@ -4,8 +4,7 @@ use axum::{
     extract::{Path, State, Query},
     response::Json,
 };
-use serde_dynamo::to_item;
-use serde_json::{json, Value, to_value};
+use serde_json::{json, Value};
 use crate::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest, SanitizedEmailConfirmationRequest};
 use crate::email_confirmation_request_service::{EmailConfirmationRequestService, NOT_FOUND_ERROR};
 use crate::handler_params::{GetSingleParams, PutStatusParams, QueryParams};
@@ -33,8 +32,6 @@ pub async fn get_email_confirmation_request_single(
     Path(pk): Path<String>,
     Query(params): Query<GetSingleParams>,
 ) -> (StatusCode, Json<Value>) {
-
-
     if let GetSingleParams {
         signature: Some(signature_param)
     } = params {
@@ -53,6 +50,12 @@ pub async fn get_email_confirmation_request_single(
 
 fn signature_is_valid(signature: String, confirmation_request: &EmailConfirmationRequest) -> bool {
     true
+    //signature == create_signature(confirmation_request)
+}
+
+fn create_signature(confirmation_request: &EmailConfirmationRequest) -> String {
+
+    "".to_string()
 }
 
 pub async fn delete_email_confirmation_request_single(
@@ -68,8 +71,20 @@ pub async fn put_email_confirmation_request_status(
     Path(pk): Path<String>,
     Json(put_status_params): Json<PutStatusParams>,
 ) -> (StatusCode, Json<Value>) {
-    let result = service.put_email_confirmation_request_status(pk, put_status_params.status).await;
-    result_to_response(result)
+    if let PutStatusParams {
+        status: Some(status_param),
+        signature: Some(signature_param)
+    } = put_status_params {
+        let confirmation_request = service.put_email_confirmation_request_status(pk, status_param).await.unwrap();
+        if signature_is_valid(signature_param, &confirmation_request) {
+            return result_to_response(
+                Ok(Json(json!({
+                        "error": false,
+                        "request": SanitizedEmailConfirmationRequest::from(confirmation_request)
+                    }))));
+        }
+    }
+    result_to_response(Err(Error::msg(NOT_FOUND_ERROR.to_string())))
 }
 
 fn result_to_response(result: Result<Json<Value>>) -> (StatusCode, Json<Value>) {
@@ -92,27 +107,6 @@ fn result_to_response(result: Result<Json<Value>>) -> (StatusCode, Json<Value>) 
                 }))
             )
         }
-
-/*
-        if error.to_string().starts_with(NOT_FOUND_ERROR) {
-            (
-                StatusCode::NOT_FOUND,
-                Json(json!({
-                "error": true,
-                "message": error.to_string()
-            })),
-            )
-        } else {
-            (
-                StatusCode::BAD_REQUEST,
-                Json(json!({
-                "error": true,
-                "message": error.to_string()
-            })),
-            )
-        }
-
- */
     }
 }
 

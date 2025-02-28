@@ -138,6 +138,7 @@ impl EmailConfirmationRequestService {
 
         let item = results.items.unwrap().first().unwrap().to_owned();
         let confirmation_request: EmailConfirmationRequest = from_item(item)?;
+
         Ok(confirmation_request)
     }
 
@@ -159,35 +160,26 @@ impl EmailConfirmationRequestService {
         })))
     }
 
-    pub async fn put_email_confirmation_request_status(&self, pk: String, status: Option<Status>) -> Result<Json<Value>> {
+    pub async fn put_email_confirmation_request_status(&self, pk: String, status: Status) -> Result<EmailConfirmationRequest> {
         if !self.request_exist(&pk).await? {
             bail!("{NOT_FOUND_ERROR}: {pk}!")
         }
 
-        if let Some(status) = status {
-            let updated_at = format!("{}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs());
+        let updated_at = format!("{}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs());
+        self.db_client
+            .update_item()
+            .table_name(&self.table_name)
+            .key("pk", AttributeValue::S(pk.clone()))
 
-            self.db_client
-                .update_item()
-                .table_name(&self.table_name)
-                .key("pk", AttributeValue::S(pk.clone()))
+            .update_expression("set #name1 = :value1, #name2 = :value2")
+            .expression_attribute_names("#name1", "status")
+            .expression_attribute_names("#name2", "updated_at")
+            .expression_attribute_values(":value1", AttributeValue::S(status.to_string()))
+            .expression_attribute_values(":value2", AttributeValue::N(updated_at))
 
-                .update_expression("set #name1 = :value1, #name2 = :value2")
-                .expression_attribute_names("#name1", "status")
-                .expression_attribute_names("#name2", "updated_at")
-                .expression_attribute_values(":value1", AttributeValue::S(status.to_string()))
-                .expression_attribute_values(":value2", AttributeValue::N(updated_at))
+            .send()
+            .await?;
 
-                .send()
-                .await?;
-
-            Ok(Json(json!({
-                "error": false,
-                "event": format!("Request status for pk: {} changed to {}", pk, status.to_string())
-            })))
-
-        } else {
-           Ok(Json(json!({})))
-        }
+        Ok(self.get_email_confirmation_request_internal(pk).await?)
     }
 }
