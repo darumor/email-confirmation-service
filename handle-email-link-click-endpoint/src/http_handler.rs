@@ -2,7 +2,7 @@ use std::env;
 use std::time::{SystemTime, UNIX_EPOCH};
 use reqwest::Client;
 use urlencoding::encode;
-use lambda_http::{Body, Error, Request, RequestExt, RequestPayloadExt, Response};
+use lambda_http::{Body, Error, Request, RequestExt, Response};
 use serde_json::json;
 use crate::email_confirmation_request::{SanitizedEmailConfirmationRequest, EmailConfirmationServiceApiResponse};
 
