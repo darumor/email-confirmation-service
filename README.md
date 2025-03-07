@@ -1,5 +1,14 @@
 # email-confirmation-service
-This is a project for practicing using rust to create aws lambdas
+This is a project for practicing using rust and aws-cdk to create aws lambdas. 
+
+## Descrition of the application
+The main concept is that a client can request this service to confirm authenticity of an email address. 
+After a request is made the service creates a link that is sent to the email using AWS SES. 
+When recipient clicks the link the address is confirmed and a POST is made to the requested callback url. 
+The link is protected with a signature that is created using information that is never sent outside 
+the service and it expires in 60 minutes. (The lifetime could be an environment variable too)
+
+This project uses different ways to invoke lambdas: API Gateway, direct invocation DynamoDB streams (and probably SNS or SQS). 
 
 The project was started by following [this tutorial](https://blog.stackademic.com/rust-apigateway-lambda-dynamo-cdk-another-all-in-one-serverless-backend-option-4da2059a8810)
 
@@ -12,6 +21,8 @@ The project was started by following [this tutorial](https://blog.stackademic.co
 - Cargo-Lambda
 - Axum
 - Dynamo
+- API Gateway
+- AWS SES
 
 ## Environment variables to be set
 _See setup-environment-template.sh_
@@ -52,14 +63,11 @@ API-key is sent to API Gateway in x-api-key header of the request.
 ...
 
 
+## Testing
 
-## Local testing
-### Start service
-    cd email-confirmation-service-rest-api
-    cargo lambda start
+### Unit tests
 
-### Smoke test
-Go to [http://localhost:9000](http://localhost:9000)
+### Local testing
 
 ### API testing
 - use e.g. [Postman](https://www.postman.com)
