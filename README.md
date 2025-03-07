@@ -12,6 +12,9 @@ This project uses different ways to invoke lambdas: API Gateway, direct invocati
 
 The project was started by following [this tutorial](https://blog.stackademic.com/rust-apigateway-lambda-dynamo-cdk-another-all-in-one-serverless-backend-option-4da2059a8810)
 
+## Architecture
+![Architecture of email confirmation service](architecture_email_confirmation_service-Plan.png)
+
 ## Prerequisites
 - aws-cdk
 - aws account
