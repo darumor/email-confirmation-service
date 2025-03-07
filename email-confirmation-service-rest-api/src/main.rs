@@ -3,6 +3,7 @@ mod handler;
 mod email_confirmation_request;
 mod handler_params;
 mod email_confirmation_request_service;
+mod signature_request;
 
 use std::env::{self, set_var};
 use aws_sdk_dynamodb::Client;
@@ -18,7 +19,6 @@ async fn main() -> Result<(), Error> {
     let config = aws_config::load_from_env().await;
     let db_client = Client::new(&config);
     let table_name = env::var("EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME")?;
-    // export EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME=EmailConfirmationLambdaTable
 
     let email_confirmation_request_service = EmailConfirmationRequestService::new(db_client, &table_name);
     let email_confirmation_request_api = Router::new()

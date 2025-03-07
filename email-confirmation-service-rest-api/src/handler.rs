@@ -1,4 +1,8 @@
+use std::env;
 use anyhow::{Error, Result};
+use aws_sdk_lambda::{Client};
+use aws_smithy_types::Blob;
+use lambda_runtime::{tracing};
 use axum::http::{StatusCode};
 use axum::{
     extract::{Path, State, Query},
@@ -8,9 +12,11 @@ use serde_json::{json, Value};
 use sha2::{Sha256, Digest};
 use hex;
 use crate::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest, SanitizedEmailConfirmationRequest};
-use crate::email_confirmation_request_service::{EmailConfirmationRequestService, NOT_FOUND_ERROR};
+use crate::email_confirmation_request_service::{EmailConfirmationRequestService, INVALID_REQUEST};
 use crate::handler_params::{GetSingleParams, PutStatusParams, QueryParams};
-
+use crate::signature_request::{SignatureRequest, SignatureResponse, SignatureVerificationResult};
+use crate::signature_request::SignatureResponse::VerificationResult;
+use crate::signature_request::SignatureVerificationResult::Success;
 
 pub async fn get_email_confirmation_requests(
     State(service): State<EmailConfirmationRequestService>,
@@ -39,8 +45,7 @@ pub async fn get_email_confirmation_request_single(
         signature: Some(signature_param)
     } = params {
         let confirmation_request = service.get_email_confirmation_request_internal(pk).await.unwrap();
-
-        if signature_is_valid(signature_param, &confirmation_request) {
+        if signature_is_valid(signature_param, &confirmation_request).await {
             return result_to_response(
                 Ok(Json(json!({
                     "error": false,
@@ -48,11 +53,46 @@ pub async fn get_email_confirmation_request_single(
                 }))));
         }
     }
-    result_to_response(Err(Error::msg(NOT_FOUND_ERROR.to_string())))
+
+    result_to_response(
+        Ok(Json(json!({
+                    "error": true,
+                    "message": INVALID_REQUEST.to_string()
+                }))))
+        //Err(Error::msg(NOT_FOUND_ERROR.to_string())))
 }
 
-fn signature_is_valid(signature: String, confirmation_request: &EmailConfirmationRequest) -> bool {
-    signature == create_signature(confirmation_request)
+async fn signature_is_valid(signature: String, confirmation_request: &EmailConfirmationRequest) -> bool {
+    tracing::info!("CHECKING signature is valid");
+    let config = aws_config::load_from_env().await;
+    let client = Client::new(&config);
+    let payload = json!(SignatureRequest::signature_verification_request(
+            &confirmation_request,
+            signature.clone()
+        ));
+
+    let function_name = env::var("SIGNATURE_SERVICE_LAMBDA_FUNCTION_NAME");
+    if let Ok(function_name) = function_name {
+        let response = client.invoke()
+            //.function_name("SignatureServiceLambdaFunction")
+            .function_name(function_name)
+            .payload(Blob::new(payload.to_string()))
+            .send()
+            .await
+            .unwrap();
+
+        if let Some(payload) = response.payload {
+            let response_str = String::from_utf8(payload.into_inner()).expect("Invalid UTF-8");
+            let result: SignatureResponse = serde_json::from_str(&response_str).expect("Invalid JSON");
+
+            if let VerificationResult(result) = result {
+                tracing::info!("RETURNING {} because result == {:?}", result == Success, &result);
+                return result == Success;
+            }
+        }
+    }
+    tracing::info!("RETURNING false");
+    false
 }
 
 fn create_signature(confirmation_request: &EmailConfirmationRequest) -> String {
@@ -89,7 +129,7 @@ pub async fn put_email_confirmation_request_status(
         signature: Some(signature_param)
     } = put_status_params {
         let confirmation_request = service.get_email_confirmation_request_internal(pk.clone()).await.unwrap();
-        if signature_is_valid(signature_param, &confirmation_request) {
+        if signature_is_valid(signature_param, &confirmation_request).await {
             let updated_request = service.put_email_confirmation_request_status(pk.clone(), status_param).await.unwrap();
             return result_to_response(
                 Ok(Json(json!({
@@ -98,7 +138,11 @@ pub async fn put_email_confirmation_request_status(
                     }))));
         }
     }
-    result_to_response(Err(Error::msg(NOT_FOUND_ERROR.to_string())))
+    result_to_response(
+        Ok(Json(json!({
+                    "error": true,
+                    "message": INVALID_REQUEST.to_string()
+                }))))
 }
 
 fn result_to_response(result: Result<Json<Value>>) -> (StatusCode, Json<Value>) {

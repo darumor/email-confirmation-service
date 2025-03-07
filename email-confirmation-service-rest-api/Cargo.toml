@@ -7,6 +7,8 @@ edition = "2021"
 anyhow = "1.0.82"
 aws-config = { version = "1.1.7", features = ["behavior-version-latest"] }
 aws-sdk-dynamodb = "1.21.0"
+aws-sdk-lambda = "1.70.0"
+lambda_runtime = "0.13.0"
 aws-smithy-types = "1.1.8"
 lambda_http = "0.14.0"
 serde = "1.0.197"

@@ -1,15 +1,17 @@
 #!/opt/homebrew/opt/node/bin/node
 import * as cdk from 'aws-cdk-lib';
-import { CdkStack } from '../lib/cdk-stack';
+import {SignatureServiceLambdaStack} from '../lib/cdk-stack';
 
-const signatureServiceLambdaFunctionNameFromEnv = process.env.SIGNATURE_SERVICE_LAMBDA_FUNCTION_NAME || "default-value";
-const emailConfirmationDynamoTableNameFromEnv = process.env.EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME || "default-value";
+const emailConfirmationLambdaFromEnv = process.env.EMAIL_CONFIRMATION_LAMBDA_ARN || "default-value";
+const emailSendingLambdaFromEnv = process.env.EMAIL_SENDING_LAMBDA_ARN || "default-value";
 
 const app = new cdk.App();
-new CdkStack(app, 'EcrsStack', {
+new SignatureServiceLambdaStack(app, 'EcsSslStack', {
 
-    signatureServiceLambdaFunctionName: signatureServiceLambdaFunctionNameFromEnv,
-    emailConfirmationDynamoTableName : emailConfirmationDynamoTableNameFromEnv
+    //emailConfirmationServiceLambda: 'arn:aws:lambda:eu-north-1:626635435572:function:EcrsStack-EmailConfirmationLambdaFunctionC6B7D8BB-HKqpRjYoEeHb',
+    emailConfirmationLambdaArn: emailConfirmationLambdaFromEnv,
+    //emailSendingLambda: 'arn:aws:lambda:eu-north-1:626635435572:function:EcsSeelStack-SendEmailEventLambdaFunctionFF1041EF-FBnFezC9N4W4'
+    emailSendingLambdaArn: emailSendingLambdaFromEnv
 
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,

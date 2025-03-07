@@ -4,18 +4,21 @@ import { EndpointType, LambdaRestApi } from 'aws-cdk-lib/aws-apigateway'
 import { Stack, StackProps } from "aws-cdk-lib";
 import { Construct } from "constructs";
 
+export interface HELCLFStackProps extends StackProps {
+  emailConfirmationRequestServiceUrl: string;
+  emailConfirmationRequestInternalApiKey: string;
+}
 
 export class CdkStack extends Stack {
-  constructor(scope: Construct, id: string, props?: StackProps) {
+  constructor(scope: Construct, id: string, props: HELCLFStackProps) {
     super(scope, id, props);
 
     const lambdaHandler = new RustFunction(this, 'HandleEmailLinkClickLambdaFunction', {
       manifestPath: join(__dirname, '..', '..'),
-    /*  environment: {
-        "EMAIL_CONFIRMATION_REQUEST_SERVICE_DYNAMO_TABLE_NAME": ""
+      environment: {
+        "EMAIL_CONFIRMATION_REQUEST_SERVICE_URL": props.emailConfirmationRequestServiceUrl,
+        "EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY": props.emailConfirmationRequestInternalApiKey
       }
-
-     */
     });
 
     new LambdaRestApi(this, 'EmailLinkClickHandlerLambdaAPIGateway', {

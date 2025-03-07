@@ -2,8 +2,12 @@
 import * as cdk from 'aws-cdk-lib';
 import { CdkStack } from '../lib/cdk-stack';
 
+const emailConfirmationDynamoDbStreamArnFromEnv = process.env.EMAIL_CONFIRMATION_DYNAMODB_STREAM_ARN || "default-value";
+
 const app = new cdk.App();
 new CdkStack(app, 'EcsTcelStack', {
+
+    emailConfirmationDynamoDbStreamArn: emailConfirmationDynamoDbStreamArnFromEnv
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

@@ -9,6 +9,7 @@ aws_lambda_events = { version = "0.15.1", default-features = false, features = [
 lambda_runtime = "0.13.0"
 tokio = { version = "1", features = ["macros"] }
 serde = { version = "1.0.217", features = ["derive"] }
+serde_json = "1.0.140"
 uuid = { version = "1.12.1", features = ["v4"] }
 sha2 = "0.10.8"
 hex = "0.4.3"

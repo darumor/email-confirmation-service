@@ -9,7 +9,7 @@ use serde_json::{json, Value};
 use crate::email_confirmation_request::{EmailConfirmationRequest, SanitizedEmailConfirmationRequest, Status};
 use crate::handler_params::QueryParams;
 
-pub const NOT_FOUND_ERROR:&str = "Request does not exist for pk";
+pub const INVALID_REQUEST:&str = "Invalid request";
 
 #[derive(Clone, Debug)]
 pub struct EmailConfirmationRequestService {
@@ -107,7 +107,7 @@ impl EmailConfirmationRequestService {
                 || results.items.is_none()
                 || results.items.clone().unwrap().is_empty()
             {
-                bail!("{NOT_FOUND_ERROR}: {pk}!")
+                bail!("{INVALID_REQUEST}: {pk}!")
             }
 
             let item = results.items.unwrap().first().unwrap().to_owned();
@@ -133,7 +133,7 @@ impl EmailConfirmationRequestService {
             || results.items.is_none()
             || results.items.clone().unwrap().is_empty()
         {
-            bail!("{NOT_FOUND_ERROR}: {pk}!")
+            bail!("{INVALID_REQUEST}: {pk}!")
         }
 
         let item = results.items.unwrap().first().unwrap().to_owned();
@@ -144,7 +144,7 @@ impl EmailConfirmationRequestService {
 
     pub async fn delete_email_confirmation_request_single(&self, pk: String) -> Result<Json<Value>> {
         if !self.request_exist(&pk).await? {
-            bail!("{NOT_FOUND_ERROR}: {pk}!")
+            bail!("{INVALID_REQUEST}: {pk}!")
         }
 
         self.db_client
@@ -162,7 +162,7 @@ impl EmailConfirmationRequestService {
 
     pub async fn put_email_confirmation_request_status(&self, pk: String, status: Status) -> Result<EmailConfirmationRequest> {
         if !self.request_exist(&pk).await? {
-            bail!("{NOT_FOUND_ERROR}: {pk}!")
+            bail!("{INVALID_REQUEST}: {pk}!")
         }
 
         let updated_at = format!("{}", SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs());

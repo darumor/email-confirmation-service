@@ -2,8 +2,13 @@
 import * as cdk from 'aws-cdk-lib';
 import { CdkStack } from '../lib/cdk-stack';
 
+const emailConfirmationRequestServiceUrlFromEnv = process.env.EMAIL_CONFIRMATION_REQUEST_SERVICE_URL || "default-value";
+const emailConfirmationRequestInternalApiKeyFromEnv = process.env.EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY || "default-value";
+
 const app = new cdk.App();
 new CdkStack(app, 'EcsHelceStack', {
+    emailConfirmationRequestServiceUrl: emailConfirmationRequestServiceUrlFromEnv,
+    emailConfirmationRequestInternalApiKey: emailConfirmationRequestInternalApiKeyFromEnv
   /* If you don't specify 'env', this stack will be environment-agnostic.
    * Account/Region-dependent features and context lookups will not work,
    * but a single synthesized template can be deployed anywhere. */

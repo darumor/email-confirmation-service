@@ -1,9 +1,10 @@
-use lambda_runtime::{tracing, Context, Error, LambdaEvent};
+use lambda_runtime::{tracing, Error, LambdaEvent};
 use crate::signature_request::*;
 use crate::signature_request::SignatureVerificationResult::Success;
 use crate::signature_request::SignatureVerificationResult::Fail;
 use sha2::{Sha256, Digest};
 use hex;
+use serde_json::{json};
 
 
 pub(crate)async fn function_handler(event: LambdaEvent<SignatureRequest>) -> Result<SignatureResponse, Error> {
@@ -54,6 +55,7 @@ mod tests {
     use std::time::{SystemTime, UNIX_EPOCH};
     use super::*;
     use uuid::Uuid;
+    use lambda_runtime::{Context};
     use crate::signature_request::SignatureResponse::{Signature, VerificationResult};
 
     #[tokio::test]
@@ -77,12 +79,20 @@ mod tests {
             )
         };
 
+        let data = creation_request.clone();
+        println!("{}", format!("{:?}", json!(data).to_string()));
+
         let event = LambdaEvent {
-            payload:creation_request,
+            payload: creation_request,
             context: Context::default()
         };
+        tracing::info!("EVENT: {:?}", &event);
+        println!("EVENT: {:?}", &event);
 
         let creation_response = function_handler(event).await.unwrap();
+        tracing::info!("{:?}", &creation_response);
+        //println!("{}", format!("{:?}", json!(&creation_response).to_string()));
+
         let Signature(signature) = creation_response else { todo!()};
 
         let verification_request = SignatureRequest {
