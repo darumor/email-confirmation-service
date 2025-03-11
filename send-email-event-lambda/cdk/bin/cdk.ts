@@ -4,12 +4,18 @@ import { CdkStack } from '../lib/cdk-stack';
 
 const emailConfirmationDynamoDbStreamArnFromEnv = process.env.EMAIL_CONFIRMATION_DYNAMODB_STREAM_ARN || "default-value";
 const signatureServiceLambdaFunctionNameFromEnv = process.env.SIGNATURE_SERVICE_LAMBDA_FUNCTION_NAME || "default-value";
+const emailLinkClickHandlerServiceUrlFromEnv = process.env.EMAIL_LINK_CLICK_HANDLER_SERVICE_URL || "default-value";
+const emailConfirmationRequestServiceUrlFromEnv = process.env.EMAIL_CONFIRMATION_REQUEST_SERVICE_URL || "default-value";
+const emailConfirmationRequestInternalApiKeyFromEnv = process.env.EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY || "default-value";
 
 const app = new cdk.App();
 new CdkStack(app, 'EcsSeelStack', {
 
     signatureServiceLambdaFunctionName: signatureServiceLambdaFunctionNameFromEnv,
-    emailConfirmationDynamoDbStreamArn: emailConfirmationDynamoDbStreamArnFromEnv
+    emailConfirmationDynamoDbStreamArn: emailConfirmationDynamoDbStreamArnFromEnv,
+    emailLinkClickHandlerServiceUrl: emailLinkClickHandlerServiceUrlFromEnv,
+    emailConfirmationRequestServiceUrl: emailConfirmationRequestServiceUrlFromEnv,
+    emailConfirmationRequestInternalApiKey: emailConfirmationRequestInternalApiKeyFromEnv
 
     /* If you don't specify 'env', this stack will be environment-agnostic.
      * Account/Region-dependent features and context lookups will not work,

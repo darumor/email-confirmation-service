@@ -1,4 +1,5 @@
 import { Stack, StackProps } from "aws-cdk-lib";
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import { join } from "path";
 import { RustFunction } from 'cargo-lambda-cdk';
 import { Construct } from 'constructs';
@@ -8,6 +9,9 @@ import {PolicyStatement} from "aws-cdk-lib/aws-iam";
 export interface SEELStackProps extends StackProps {
   signatureServiceLambdaFunctionName: string;
   emailConfirmationDynamoDbStreamArn: string;
+  emailLinkClickHandlerServiceUrl: string;
+  emailConfirmationRequestServiceUrl: string;
+  emailConfirmationRequestInternalApiKey: string;
 }
 
 export class CdkStack extends Stack {
@@ -19,7 +23,10 @@ export class CdkStack extends Stack {
       manifestPath: join(__dirname, '..', '..'),
       environment: {
         "EMAIL_CONFIRMATION_DYNAMODB_STREAM_ARN": props.emailConfirmationDynamoDbStreamArn,
-        "SIGNATURE_SERVICE_LAMBDA_FUNCTION_NAME":  props.signatureServiceLambdaFunctionName
+        "SIGNATURE_SERVICE_LAMBDA_FUNCTION_NAME":  props.signatureServiceLambdaFunctionName,
+        "EMAIL_LINK_CLICK_HANDLER_SERVICE_URL": props.emailLinkClickHandlerServiceUrl,
+        "EMAIL_CONFIRMATION_REQUEST_SERVICE_URL": props.emailConfirmationRequestServiceUrl,
+        "EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY": props.emailConfirmationRequestInternalApiKey
       }
     });
 
@@ -31,6 +38,12 @@ export class CdkStack extends Stack {
       bisectBatchOnError: true,
       retryAttempts: 10,
   });
+
+    const targetLambda = lambda.Function.fromFunctionName(this, 'SignatureLambda',
+        props.signatureServiceLambdaFunctionName
+    );
+
+    targetLambda.grantInvoke(lambdaHandler);
 
     lambdaHandler.addToRolePolicy(
         new PolicyStatement({

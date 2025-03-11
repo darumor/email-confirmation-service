@@ -96,6 +96,7 @@ async fn signature_is_valid(signature: String, confirmation_request: &EmailConfi
 }
 
 fn create_signature(confirmation_request: &EmailConfirmationRequest) -> String {
+    //todo refactor to use dedicated lambda ... or not, this is probably never needed in final version
     let email = confirmation_request.email.clone();
     let client_id = confirmation_request.client_id.clone();
     let request_id = confirmation_request.request_id.clone();
