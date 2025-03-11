@@ -3,6 +3,7 @@ import {RustFunction} from 'cargo-lambda-cdk';
 import {EndpointType, LambdaRestApi} from 'aws-cdk-lib/aws-apigateway'
 import {AttributeType, BillingMode, Table, StreamViewType} from 'aws-cdk-lib/aws-dynamodb';
 import {RemovalPolicy, Stack, StackProps} from "aws-cdk-lib";
+import * as lambda from 'aws-cdk-lib/aws-lambda';
 import {Construct} from "constructs";
 
 export interface ECLFStackProps extends StackProps {
@@ -29,6 +30,11 @@ export class CdkStack extends Stack {
       }
     });
 
+    const targetLambda = lambda.Function.fromFunctionName(this, 'SignatureLambda',
+        props.signatureServiceLambdaFunctionName
+    );
+
+    targetLambda.grantInvoke(lambdaHandler);
     dynamoTable.grantFullAccess(lambdaHandler);
 
     new LambdaRestApi(this, 'EmailConfirmationLambdaAPIGateway', {

@@ -1,7 +1,8 @@
 use lambda_runtime::{tracing, Error, LambdaEvent};
-use crate::signature_request::*;
-use crate::signature_request::SignatureVerificationResult::Success;
-use crate::signature_request::SignatureVerificationResult::Fail;
+
+use email_confirmation_service_common::signature_request::*;
+use email_confirmation_service_common::signature_request::SignatureResponse::VerificationResult;
+use email_confirmation_service_common::signature_request::SignatureVerificationResult::{Success, Fail};
 use sha2::{Sha256, Digest};
 use hex;
 use serde_json::{json};
@@ -19,7 +20,7 @@ pub(crate)async fn function_handler(event: LambdaEvent<SignatureRequest>) -> Res
         signature_request_type: SignatureRequestType::SignatureVerificationRequest,
         signature_request_payload: SignatureRequestPayload::SignatureVerificationRequest(payload)
     } = event.payload {
-        return Ok(SignatureResponse::VerificationResult(verify_signature(payload)))
+        return Ok(VerificationResult(verify_signature(payload)))
     }
     Err(Error::from("Invalid request"))
 }
@@ -56,7 +57,7 @@ mod tests {
     use super::*;
     use uuid::Uuid;
     use lambda_runtime::{Context};
-    use crate::signature_request::SignatureResponse::{Signature, VerificationResult};
+    use email_confirmation_service_common::signature_request::SignatureResponse::{Signature, VerificationResult};
 
     #[tokio::test]
     async fn test_event_handler() {

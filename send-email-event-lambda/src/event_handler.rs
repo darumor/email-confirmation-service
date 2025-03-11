@@ -8,10 +8,11 @@ use urlencoding::encode;
 use chrono::{DateTime, Utc};
 use serde_json::{json};
 use serde_dynamo::{Item, AttributeValue::S, AttributeValue::N, from_item};
-use crate::email_confirmation_request::{EmailConfirmationRequest, EmailConfirmationServiceApiResponse};
-use crate::email_confirmation_request::Status::{Pending, Queued};
-use crate::signature_request::{SignatureRequest, SignatureResponse};
-use crate::signature_request::SignatureResponse::Signature;
+
+use email_confirmation_service_common::email_confirmation_request::{EmailConfirmationRequest, EmailConfirmationServiceApiResponse};
+use email_confirmation_service_common::email_confirmation_request::Status::{Pending, Queued};
+use email_confirmation_service_common::signature_request::SignatureResponse::Signature;
+use email_confirmation_service_common::signature_request::{SignatureRequest, SignatureResponse};
 
 pub(crate)async fn function_handler(event: LambdaEvent<Event>) -> Result<(), Error> {
     // Extract some useful information from the request

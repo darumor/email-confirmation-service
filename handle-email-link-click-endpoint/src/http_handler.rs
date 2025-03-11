@@ -4,7 +4,7 @@ use reqwest::Client;
 use urlencoding::encode;
 use lambda_http::{Body, Error, Request, RequestExt, Response};
 use serde_json::json;
-use crate::email_confirmation_request::{SanitizedEmailConfirmationRequest, EmailConfirmationServiceApiResponse};
+use email_confirmation_service_common::email_confirmation_request::{SanitizedEmailConfirmationRequest, EmailConfirmationServiceApiResponse};
 
 pub(crate) async fn function_handler(event: Request) -> Result<Response<Body>, Error> {
     let path = event.raw_http_path();

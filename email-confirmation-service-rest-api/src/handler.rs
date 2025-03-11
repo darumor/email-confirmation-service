@@ -11,12 +11,14 @@ use axum::{
 use serde_json::{json, Value};
 use sha2::{Sha256, Digest};
 use hex;
-use crate::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest, SanitizedEmailConfirmationRequest};
+
 use crate::email_confirmation_request_service::{EmailConfirmationRequestService, INVALID_REQUEST};
-use crate::handler_params::{GetSingleParams, PutStatusParams, QueryParams};
-use crate::signature_request::{SignatureRequest, SignatureResponse, SignatureVerificationResult};
-use crate::signature_request::SignatureResponse::VerificationResult;
-use crate::signature_request::SignatureVerificationResult::Success;
+
+use email_confirmation_service_common::handler_params::{GetSingleParams, PutStatusParams, QueryParams};
+use email_confirmation_service_common::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest, SanitizedEmailConfirmationRequest};
+use email_confirmation_service_common::signature_request::{SignatureRequest, SignatureResponse, SignatureVerificationResult};
+use email_confirmation_service_common::signature_request::SignatureResponse::VerificationResult;
+use email_confirmation_service_common::signature_request::SignatureVerificationResult::Success;
 
 pub async fn get_email_confirmation_requests(
     State(service): State<EmailConfirmationRequestService>,
@@ -59,7 +61,6 @@ pub async fn get_email_confirmation_request_single(
                     "error": true,
                     "message": INVALID_REQUEST.to_string()
                 }))))
-        //Err(Error::msg(NOT_FOUND_ERROR.to_string())))
 }
 
 async fn signature_is_valid(signature: String, confirmation_request: &EmailConfirmationRequest) -> bool {

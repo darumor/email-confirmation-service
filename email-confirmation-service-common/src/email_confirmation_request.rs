@@ -7,6 +7,12 @@ use crate::handler_params::QueryParams;
 
 pub const EMAIL_REQUEST_EXPIRATION_PERIOD:Duration = Duration::from_secs(60 * 60);
 
+#[derive(Debug, Serialize, Deserialize, PartialEq, Eq, Clone)]
+pub struct EmailConfirmationServiceApiResponse {
+    pub error: bool,
+    pub request: SanitizedEmailConfirmationRequest
+}
+
 #[derive(Debug, Serialize, Deserialize, PartialEq, Eq)]
 pub struct EmailConfirmationMinimalRequest {
     pub email: String,

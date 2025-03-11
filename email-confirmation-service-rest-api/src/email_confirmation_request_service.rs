@@ -6,8 +6,10 @@ use aws_sdk_dynamodb::types::AttributeValue;
 use axum::Json;
 use serde_dynamo::{from_item, from_items, to_item};
 use serde_json::{json, Value};
-use crate::email_confirmation_request::{EmailConfirmationRequest, SanitizedEmailConfirmationRequest, Status};
-use crate::handler_params::QueryParams;
+//use crate::email_confirmation_request::{EmailConfirmationRequest, SanitizedEmailConfirmationRequest, Status};
+//use crate::handler_params::QueryParams;
+use email_confirmation_service_common::email_confirmation_request::{ EmailConfirmationRequest, SanitizedEmailConfirmationRequest, Status};
+use email_confirmation_service_common::handler_params::{QueryParams};
 
 pub const INVALID_REQUEST:&str = "Invalid request";
 
