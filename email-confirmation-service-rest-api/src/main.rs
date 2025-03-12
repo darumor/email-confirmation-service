@@ -1,6 +1,7 @@
 use lambda_http::{run, tracing, Error};
 mod handler;
 mod email_confirmation_request_service;
+mod handler_params;
 
 use std::env::{self, set_var};
 use aws_sdk_dynamodb::Client;

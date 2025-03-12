@@ -6,10 +6,8 @@ use aws_sdk_dynamodb::types::AttributeValue;
 use axum::Json;
 use serde_dynamo::{from_item, from_items, to_item};
 use serde_json::{json, Value};
-//use crate::email_confirmation_request::{EmailConfirmationRequest, SanitizedEmailConfirmationRequest, Status};
-//use crate::handler_params::QueryParams;
 use email_confirmation_service_common::email_confirmation_request::{ EmailConfirmationRequest, SanitizedEmailConfirmationRequest, Status};
-use email_confirmation_service_common::handler_params::{QueryParams};
+use crate::handler_params::{QueryParams};
 
 pub const INVALID_REQUEST:&str = "Invalid request";
 
@@ -28,8 +26,12 @@ impl EmailConfirmationRequestService {
     }
 
     pub async fn get_email_confirmation_requests(&self, params: QueryParams) -> Result<Json<Value>> {
-       let pk_result = EmailConfirmationRequest::pk_from_query_params(&params);
-        if let Result::Ok(id_string) = pk_result {
+        if let QueryParams {
+            email: Some(email_param),
+            client_id: Some(client_id_param),
+            request_id: Some(request_id_param)
+        } = params {
+            let id_string = EmailConfirmationRequest::pk_from_params(&email_param, &client_id_param, &request_id_param);
             return self.get_email_confirmation_request_single(id_string).await;
         }
 

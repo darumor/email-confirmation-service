@@ -3,7 +3,6 @@ use std::ops::Add;
 use serde::{Deserialize, Serialize};
 use std::time::*;
 use uuid::Uuid;
-use crate::handler_params::QueryParams;
 
 pub const EMAIL_REQUEST_EXPIRATION_PERIOD:Duration = Duration::from_secs(60 * 60);
 
@@ -73,18 +72,6 @@ impl EmailConfirmationRequest {
         let expires_at = SystemTime::now().add(EMAIL_REQUEST_EXPIRATION_PERIOD).duration_since(UNIX_EPOCH).unwrap().as_secs();
         let updated_at = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs();
         EmailConfirmationRequest { pk, email, client_id, request_id, callback_url, signature_key, created_at, expires_at, updated_at, status: Status::Queued }
-    }
-
-    pub fn pk_from_query_params (params: &QueryParams) -> Result<String, String> {
-        if let QueryParams {
-            email: Some(email_param),
-            client_id: Some(client_id_param),
-            request_id: Some(request_id_param),
-            expires_after: _
-        } = params {
-            return Ok(Self::pk_from_params(email_param, client_id_param, request_id_param));
-        }
-        Err(format!("Invalid parameters {params:?}"))
     }
 
     pub fn pk_from_params (email: &str, client_id: &str, request_id: &str) -> String {

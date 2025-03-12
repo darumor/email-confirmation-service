@@ -1,9 +1,9 @@
 use std::env;
-use anyhow::{Error, Result};
-use aws_sdk_lambda::{Client};
+use anyhow::Result;
+use aws_sdk_lambda::Client;
 use aws_smithy_types::Blob;
-use lambda_runtime::{tracing};
-use axum::http::{StatusCode};
+use lambda_runtime::tracing;
+use axum::http::StatusCode;
 use axum::{
     extract::{Path, State, Query},
     response::Json,
@@ -13,10 +13,10 @@ use sha2::{Sha256, Digest};
 use hex;
 
 use crate::email_confirmation_request_service::{EmailConfirmationRequestService, INVALID_REQUEST};
+use crate::handler_params::{GetSingleParams, PutStatusParams, QueryParams};
 
-use email_confirmation_service_common::handler_params::{GetSingleParams, PutStatusParams, QueryParams};
 use email_confirmation_service_common::email_confirmation_request::{EmailConfirmationMinimalRequest, EmailConfirmationRequest, SanitizedEmailConfirmationRequest};
-use email_confirmation_service_common::signature_request::{SignatureRequest, SignatureResponse, SignatureVerificationResult};
+use email_confirmation_service_common::signature_request::{SignatureRequest, SignatureResponse};
 use email_confirmation_service_common::signature_request::SignatureResponse::VerificationResult;
 use email_confirmation_service_common::signature_request::SignatureVerificationResult::Success;
 
