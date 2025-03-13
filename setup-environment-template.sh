@@ -28,6 +28,7 @@ export EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY=
 
 # TriggerCallbackEventLambdaFunction
 export EMAIL_CONFIRMATION_DYNAMODB_STREAM_ARN=
+export SIGNATURE_SERVICE_LAMBDA_FUNCTION_NAME=
 
 # print setup
 echo environment variables set:
