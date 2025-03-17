@@ -5,6 +5,9 @@ use aws_smithy_types::Blob;
 use aws_lambda_events::event::dynamodb::Event;
 use urlencoding::encode;
 
+use aws_config::meta::region::RegionProviderChain;
+use aws_sdk_ses::types::{Destination, Message, Body, Content};
+
 use chrono::{DateTime, Utc};
 use serde_json::{json};
 use serde_dynamo::{Item, AttributeValue::S, AttributeValue::N, from_item};
@@ -52,7 +55,7 @@ pub(crate)async fn function_handler(event: LambdaEvent<Event>) -> Result<(), Err
             tracing::info!("Created link: {}", &link);
 
             let email_message = format_email(confirmation_request.expires_at, link);
-            let result = send_email(email_message).await?;
+            let result = send_email(confirmation_request.email.clone(), email_message).await?;
             result
         }
     }
@@ -113,12 +116,40 @@ fn format_email(expires_at: u64, link: String) -> String {
     format!("Hi! to confirm your email address, click the link below. The link will expire on {}. \n\n {}. ", datetime, link)
 }
 
-async fn send_email(email_message: String) -> Result<(), Error> {
+async fn send_email(email_address: String, email_message: String) -> Result<(), Error> {
     tracing::info!("Sending email");
-    // todo            send_email_using SES
+    
+    let region_provider = RegionProviderChain::default_provider();
+    let config = aws_config::from_env().region(region_provider).load().await;
+    let client = aws_sdk_ses::Client::new(&config);
+
+    let destination = Destination::builder()
+        .to_addresses(email_address)
+        .build();
+
+    let subject = Content::builder().data("Please, confirm your email.").build()?;
+    let body = Body::builder()
+        .text(Content::builder().data(email_message).build()?)
+        .build();
+
+    let message = Message::builder()
+        .subject(subject)
+        .body(body)
+        .build();
+
+    let email_sender_address = env::var("EMAIL_SENDER_ADDRESS")?;
+
+    // Send the email
+    let response = client
+        .send_email()
+        .source(email_sender_address)  // Change to a verified SES email
+        .destination(destination)
+        .message(message)
+        .send()
+        .await?;
+
     Ok(())
 }
-
 
 #[cfg(test)]
 mod tests {

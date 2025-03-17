@@ -12,6 +12,7 @@ export interface SEELStackProps extends StackProps {
   emailLinkClickHandlerServiceUrl: string;
   emailConfirmationRequestServiceUrl: string;
   emailConfirmationRequestInternalApiKey: string;
+  emailSenderAddress: string;
 }
 
 export class CdkStack extends Stack {
@@ -26,7 +27,8 @@ export class CdkStack extends Stack {
         "SIGNATURE_SERVICE_LAMBDA_FUNCTION_NAME":  props.signatureServiceLambdaFunctionName,
         "EMAIL_LINK_CLICK_HANDLER_SERVICE_URL": props.emailLinkClickHandlerServiceUrl,
         "EMAIL_CONFIRMATION_REQUEST_SERVICE_URL": props.emailConfirmationRequestServiceUrl,
-        "EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY": props.emailConfirmationRequestInternalApiKey
+        "EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY": props.emailConfirmationRequestInternalApiKey,
+        "EMAIL_SENDER_ADDRESS": props.emailSenderAddress
       }
     });
 
@@ -43,8 +45,10 @@ export class CdkStack extends Stack {
         props.signatureServiceLambdaFunctionName
     );
 
+    // Attach SignatureLambda permissions to the Lambda execution role
     targetLambda.grantInvoke(lambdaHandler);
 
+    // Attach DynamoDB Stream permissions to the Lambda execution role
     lambdaHandler.addToRolePolicy(
         new PolicyStatement({
           actions: [
@@ -56,6 +60,12 @@ export class CdkStack extends Stack {
           resources: [props.emailConfirmationDynamoDbStreamArn],
         })
     );
+
+    // Attach SES permissions to the Lambda execution role
+    lambdaHandler.addToRolePolicy(new PolicyStatement({
+      actions: ['ses:SendEmail', 'ses:SendRawEmail'],
+      resources: ['*'],
+    }));
 
   }
 }
