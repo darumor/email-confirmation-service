@@ -1,3 +1,5 @@
+# THIS IS THE DEFAULT README!
+
 # Introduction
 
 email-confirmation-service-rest-api is a Rust project that implements an AWS Lambda function in Rust.
