@@ -7,6 +7,7 @@ import { Construct } from "constructs";
 export interface HELCLFStackProps extends StackProps {
   emailConfirmationRequestServiceUrl: string;
   emailConfirmationRequestInternalApiKey: string;
+  emailLinkClickHandlerServiceUrl: string;
 }
 
 export class CdkStack extends Stack {
@@ -17,7 +18,8 @@ export class CdkStack extends Stack {
       manifestPath: join(__dirname, '..', '..'),
       environment: {
         "EMAIL_CONFIRMATION_REQUEST_SERVICE_URL": props.emailConfirmationRequestServiceUrl,
-        "EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY": props.emailConfirmationRequestInternalApiKey
+        "EMAIL_CONFIRMATION_REQUEST_SERVICE_INTERNAL_API_KEY": props.emailConfirmationRequestInternalApiKey,
+        "EMAIL_LINK_CLICK_HANDLER_SERVICE_URL": props.emailLinkClickHandlerServiceUrl
       }
     });
 
